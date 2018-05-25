@@ -30,7 +30,9 @@ class GTP(contextlib.AbstractContextManager):
     def send_command(self, command):
         if not self.is_alive():
             raise GTPConnectionBrokenException()
-        cmd = bytes(Command(command))
+        if not isinstance(command, Command):
+            command = Command(command)
+        cmd = bytes(command)
         self._p.stdin.write(cmd)
         self._p.stdin.flush()
         # XXX assume only one command is sent.
@@ -67,11 +69,10 @@ class Response:
 
     def __init__(self, response):
         response = response.decode('utf8')
-        self._parse(response)
-
         self._response = response
         self._type = None
         self._content = None
+        self._parse(response)
 
     def _parse(self, response):
         if '\n' in response.strip():
