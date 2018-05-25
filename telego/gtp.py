@@ -1,5 +1,5 @@
 import contextlib
-import socket
+import subprocess
 from enum import Enum, auto
 
 
@@ -8,32 +8,38 @@ class GTP(contextlib.AbstractContextManager):
 
     """
 
-    def __init__(self, host, port):
-        self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._s.settimeout(8)
-        self._host = host
-        self._port = port
+    def __init__(self, cmd):
+        self._cmd = cmd
 
-    def connect(self):
-        self._s.connect((self._host, self._port))
+    def open(self):
+        self._p = subprocess.Popen(self._cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 
     def close(self):
-        self._s.close()
+        self._p.terminate()
+
+    def is_alive(self):
+        return self._p.poll() is None
 
     def __enter__(self):
-        self.connect()
+        self.open()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
     def send_command(self, command):
+        if not self.is_alive():
+            raise GTPConnectionBrokenException()
         cmd = bytes(Command(command))
-        print('send cmd:', cmd)
-        self._s.send(cmd)
+        self._p.stdin.write(cmd)
+        self._p.stdin.flush()
         # XXX assume only one command is sent.
         # XXX assume response size is not larger than 4096
-        return Response(self._s.recv(4096))
+        return Response(self._p.stdout.readline())
+
+
+class GTPConnectionBrokenException(Exception):
+    pass
 
 
 class Command:
@@ -106,6 +112,6 @@ class ResponseType(Enum):
 
 
 if __name__ == '__main__':
-    cmds = ['boardsize 9'] + ['genmove b', 'genmove w'] * 50
-    with GTP('192.168.234.100', 4413) as gtp:
+    cmds = ['boardsize 9', 'komi 5.5'] + ['genmove b', 'genmove w', 'final_score'] * 50
+    with GTP('pachi') as gtp:
         res = [gtp.send_command(cmd) for cmd in cmds]
