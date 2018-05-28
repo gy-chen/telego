@@ -10,7 +10,9 @@ with open('telego/__init__.py', 'r') as f:
     else:
         version = '0.0.1'
 
-REQUIRES = []
+REQUIRES = [
+    'gomill'
+]
 
 setup(
     name='telego',

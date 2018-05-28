@@ -1,5 +1,5 @@
 import contextlib
-import socket
+import subprocess
 from enum import Enum, auto
 
 
@@ -8,32 +8,43 @@ class GTP(contextlib.AbstractContextManager):
 
     """
 
-    def __init__(self, host, port):
-        self._s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._s.settimeout(8)
-        self._host = host
-        self._port = port
+    def __init__(self, cmd):
+        self._cmd = cmd
 
-    def connect(self):
-        self._s.connect((self._host, self._port))
+    def open(self):
+        self._p = subprocess.Popen(self._cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
     def close(self):
-        self._s.close()
+        self._p.terminate()
+
+    def is_alive(self):
+        return self._p.poll() is None
 
     def __enter__(self):
-        self.connect()
+        self.open()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
+    def recv_response(self, ignore_empty=True):
+        response = Response(self._p.stdout.readline())
+        if ignore_empty and response.type == ResponseType.EMPTY:
+            return self.recv_response(ignore_empty=ignore_empty)
+        return response
+
     def send_command(self, command):
-        cmd = bytes(Command(command))
-        print('send cmd:', cmd)
-        self._s.send(cmd)
-        # XXX assume only one command is sent.
-        # XXX assume response size is not larger than 4096
-        return Response(self._s.recv(4096))
+        if not self.is_alive():
+            raise GTPConnectionBrokenException()
+        if not isinstance(command, Command):
+            command = Command(command)
+        cmd = bytes(command)
+        self._p.stdin.write(cmd)
+        self._p.stdin.flush()
+
+
+class GTPConnectionBrokenException(Exception):
+    pass
 
 
 class Command:
@@ -61,11 +72,10 @@ class Response:
 
     def __init__(self, response):
         response = response.decode('utf8')
-        self._parse(response)
-
         self._response = response
         self._type = None
         self._content = None
+        self._parse(response)
 
     def _parse(self, response):
         if '\n' in response.strip():
@@ -106,6 +116,6 @@ class ResponseType(Enum):
 
 
 if __name__ == '__main__':
-    cmds = ['boardsize 9'] + ['genmove b', 'genmove w'] * 50
-    with GTP('192.168.234.100', 4413) as gtp:
+    cmds = ['boardsize 9', 'komi 5.5'] + ['genmove b', 'genmove w', 'final_score'] * 50
+    with GTP('pachi') as gtp:
         res = [gtp.send_command(cmd) for cmd in cmds]
