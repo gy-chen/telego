@@ -12,7 +12,7 @@ class GTP(contextlib.AbstractContextManager):
         self._cmd = cmd
 
     def open(self):
-        self._p = subprocess.Popen(self._cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        self._p = subprocess.Popen(self._cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
     def close(self):
         self._p.terminate()
@@ -27,6 +27,12 @@ class GTP(contextlib.AbstractContextManager):
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
+    def recv_response(self, ignore_empty=True):
+        response = Response(self._p.stdout.readline())
+        if ignore_empty and response.type == ResponseType.EMPTY:
+            return self.recv_response(ignore_empty=ignore_empty)
+        return response
+
     def send_command(self, command):
         if not self.is_alive():
             raise GTPConnectionBrokenException()
@@ -35,9 +41,6 @@ class GTP(contextlib.AbstractContextManager):
         cmd = bytes(command)
         self._p.stdin.write(cmd)
         self._p.stdin.flush()
-        # XXX assume only one command is sent.
-        # XXX assume response size is not larger than 4096
-        return Response(self._p.stdout.readline())
 
 
 class GTPConnectionBrokenException(Exception):

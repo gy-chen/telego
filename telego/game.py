@@ -4,12 +4,14 @@ from enum import Enum, auto
 from .gtp.base import ResponseType
 from .gtp.commands import Genmove, Play
 from .gtp.entities import Move, StoneColor
+from .board import Board
 
 
 class Game(contextlib.AbstractContextManager):
     """Manage state of go game that play with computer
 
     """
+
     def __init__(self, player_color, gtp, board_size=9):
         self._player_color = StoneColor(player_color)
         self._gtp = gtp
@@ -31,9 +33,10 @@ class Game(contextlib.AbstractContextManager):
             turn = GameTurn.PLAYER
         else:
             turn = GameTurn.COMPUTER
-        # TODO setup board
+        board = Board(self._board_size)
         context = {
-            'turn': turn
+            'turn': turn,
+            'board': board
         }
         return context
 
@@ -49,8 +52,7 @@ class Game(contextlib.AbstractContextManager):
 
     @property
     def board(self):
-        # TODO get board from context
-        return NotImplemented
+        return self._context['board']
 
     @property
     def player_color(self):
@@ -66,20 +68,21 @@ class Game(contextlib.AbstractContextManager):
     def player_play(self, move):
         if not self.is_player_turn():
             raise GameTurnError()
-        self._place(self._player_color, move)
-        response = self._gtp.send_command(Play(self._player_color, move))
+        self._check_move(move)
+        self._gtp.send_command(Play(self._player_color, move))
+        response = self._gtp.recv_response()
         if response.type == ResponseType.ERROR:
-            raise GameEngineError()
+            raise GameEngineError(response.content)
+        self._place(self._player_color, move)
         self._end_turn()
-        
+
     def computer_play(self):
         if not self.is_computer_turn():
             raise GameTurnError()
-        response = self._gtp.send_command(Genmove(self.computer_color))
-        import pdb
-        pdb.set_trace()
-        if response.type != ResponseType.SUCCESS:
-            raise GameEngineError()
+        self._gtp.send_command(Genmove(self.computer_color))
+        response = self._gtp.recv_response()
+        if response.type == ResponseType.ERROR:
+            raise GameEngineError(response.content)
         move = Move(response.content)
         self._place(self.computer_color, move)
         self._end_turn()
@@ -91,8 +94,13 @@ class Game(contextlib.AbstractContextManager):
             self._context['turn'] = GameTurn.COMPUTER
 
     def _place(self, color, move):
-        # placew correspond movement at the board
-        return NotImplemented
+        board = self._context['board']
+        board.play(color, move)
+
+    def _check_move(self, move):
+        move = Move(move)
+        if not move.is_valid(self._board_size):
+            raise GameMoveInvalidError()
 
     def __enter__(self):
         self.setup()
@@ -120,8 +128,13 @@ class GameEngineError(Exception):
     pass
 
 
+class GameMoveInvalidError(Exception):
+    pass
+
+
 if __name__ == '__main__':
     from .gtp.base import GTP
+
     gtp = GTP('pachi')
     game = Game(StoneColor.BLACK, gtp)
     game.setup()
