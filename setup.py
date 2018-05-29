@@ -11,7 +11,8 @@ with open('telego/__init__.py', 'r') as f:
         version = '0.0.1'
 
 REQUIRES = [
-    'gomill'
+    'gomill',
+    'python-telegram-bot'
 ]
 
 setup(

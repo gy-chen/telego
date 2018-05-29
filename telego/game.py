@@ -1,12 +1,14 @@
 import contextlib
-from collections import namedtuple
 from enum import Enum, auto
 from .gtp.base import ResponseType
 from .gtp.commands import Genmove, Play
 from .gtp.entities import Move, StoneColor
 from .board import Board
 
+__ALL__ = ['Game', 'GameState', 'GameTurn', 'GameTurnError', 'GameEngineError', 'GameMoveInvalidError']
 
+
+# TODO deal with end of game
 class Game(contextlib.AbstractContextManager):
     """Manage state of go game that play with computer
 
