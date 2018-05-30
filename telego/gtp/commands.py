@@ -10,6 +10,7 @@ class Play(Command):
     """Command to place stone
 
     """
+
     def __init__(self, color, move):
         color = StoneColor(color)
         move = Move(move)
@@ -30,6 +31,7 @@ class Boardsize(Command):
     """Command to setup board size
 
     """
+
     def __init__(self, size):
         size = int(size)
         self._command = "boardsize {}".format(size)
@@ -39,6 +41,16 @@ class Komi(Command):
     """Command to setup komi
 
     """
+
     def __init__(self, komi):
         komi = float(komi)
         self._command = "komi {}".format(komi)
+
+
+class Finalscore(Command):
+    """Command to get final score
+
+    """
+
+    def __init__(self):
+        self._command = "final_score"
