@@ -1,6 +1,12 @@
+import gettext
+import os
 from telegram.ext import Updater
 from . import config
 from . import handlers
+
+localedir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'translations'))
+translation = gettext.translation(__name__, localedir=localedir, languages=[config.LANGUAGE])
+translation.install()
 
 
 def create_app():
@@ -9,11 +15,3 @@ def create_app():
     handlers.register_handlers(updater.dispatcher)
 
     return updater
-
-
-if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
-    app = create_app()
-    app.start_polling()
-    app.idle()

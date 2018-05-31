@@ -1,0 +1,40 @@
+# Chinese (Traditional, Taiwan) translations for telego.
+# Copyright (C) 2018 ORGANIZATION
+# This file is distributed under the same license as the telego project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2018.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: telego 0.0.1\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2018-05-31 10:40+0800\n"
+"PO-Revision-Date: 2018-05-31 11:09+0800\n"
+"Language: zh_TW\n"
+"Language-Team: zh_Hant_TW <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.6.0\n"
+"Last-Translator: \n"
+"X-Generator: Poedit 2.0.7\n"
+
+#: telego/telegram/handlers/game_handler.py:39
+msgid "Starting game..."
+msgstr "準備開始..."
+
+#: telego/telegram/handlers/game_handler.py:44
+msgid "Invalid color"
+msgstr "無效的顏色"
+
+#: telego/telegram/handlers/game_handler.py:74
+msgid "Invalid move"
+msgstr "無效的一步"
+
+#: telego/telegram/handlers/game_handler.py:82
+msgid "Waiting for computer..."
+msgstr "電腦思考中..."
+
+#: telego/telegram/handlers/game_handler.py:85
+msgid "Computer: {}"
+msgstr "電腦: {}"
