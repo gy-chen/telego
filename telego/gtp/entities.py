@@ -34,6 +34,7 @@ def col_index(self):
 Move.is_valid = is_valid
 Move.row_index = row_index
 Move.col_index = col_index
+Move.__str__ = lambda self: self.value
 
 
 class StoneColor(Enum):
