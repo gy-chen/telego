@@ -15,3 +15,13 @@ def create_app():
     handlers.register_handlers(updater.dispatcher)
 
     return updater
+
+
+def main():
+    import logging
+
+    logging.basicConfig(level=logging.DEBUG)
+    
+    app = create_app()
+    app.start_polling()
+    app.idle()

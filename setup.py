@@ -13,7 +13,8 @@ with open('telego/__init__.py', 'r') as f:
 REQUIRES = [
     'gomill',
     'python-telegram-bot',
-    'Babel'
+    'Babel',
+    'python-dotenv'
 ]
 
 setup(
