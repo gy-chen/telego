@@ -32,5 +32,13 @@ setup(
         'extract_messages': babel.extract_messages,
         'init_catalog': babel.init_catalog,
         'update_catalog': babel.update_catalog
-    }
+    },
+    entry_points={
+        'console_scripts': [
+            'telego=telego.telegram:main',
+        ],
+    },
+    package_data={
+        'telego': ['telegram/translations/zh_TW/LC_MESSAGES/*'],
+    },
 )
