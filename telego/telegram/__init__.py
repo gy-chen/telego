@@ -9,7 +9,7 @@ translation = gettext.translation(__name__, localedir=localedir, languages=[conf
 translation.install()
 
 
-def create_app():
+def create_updater():
     updater = Updater(token=config.TOKEN)
 
     handlers.register_handlers(updater.dispatcher)
@@ -21,7 +21,15 @@ def main():
     import logging
 
     logging.basicConfig(level=logging.DEBUG)
-    
-    app = create_app()
-    app.start_polling()
-    app.idle()
+
+    updater = create_updater()
+    if config.USE_WEBHOOK:
+        logging.info('telego started using webhook')
+        updater.start_webhook(
+            listen="0.0.0.0",
+            port=config.WEBHOOK_PORT,
+            webhook_url=config.WEBHOOK_URL)
+    else:
+        logging.info('telego started using polling')
+        updater.start_polling()
+    updater.idle()
