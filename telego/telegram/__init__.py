@@ -28,7 +28,8 @@ def main():
         updater.start_webhook(
             listen="0.0.0.0",
             port=config.WEBHOOK_PORT,
-            webhook_url=config.WEBHOOK_URL)
+            url_path=config.TOKEN)
+        updater.bot.set_webhook(config.WEBHOOK_URL + TOKEN)
     else:
         logging.info('telego started using polling')
         updater.start_polling()
