@@ -1,4 +1,4 @@
-FROM ubuntu:bionic
+FROM ubuntu:cosmic
 
 RUN apt-get update && \
   apt-get install -y build-essential git libcaffe-cpu-dev libboost-dev libgflags-dev libgoogle-glog-dev libprotobuf-dev liblas-dev && \
